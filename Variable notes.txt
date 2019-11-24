@@ -1,0 +1,49 @@
+t = current booking day
+T = number of next arrival days to predict
+tau = 0, 1, ..., T
+H = total number of historical book days prior to today
+h = 1, 2, ..., H
+S = number of past book days prior to t-h
+
+Output:
+Given day t, we want to predict today's bookings plus the next T days worth of bookings, i.e. tau.
+In terms of a word predictor, think of this as the word to be predicted at the end of a sentence.
+
+Input:
+We will input the previous H days worth of bookings, ie. h.
+Think of this as the previous words in the sentence.
+
+Note: Whenever you see (t-h) in the document, they usually mean one of the H previous days not the whole sequence.
+
+For each day in h, we will look at the next T days of bookings, ie. tau.
+This results in a 1D vector of size tau for X1, X2, and X3 for the day's month, day of the week, and average room rate.
+
+Example X1 = Month for next tau booking days for current day  = [11, 11, 11, ..., 12, 12]
+Example X2 = Day of Week for next tau booking days for current day = [6, 7, 1, 2, ..., #, #]
+
+We need to also keep track of historical booking data over the past S days.
+This results in an array of tau x S for ~Y~.
+
+Example ~Y~ = Number of bookings for next tau booking days for the past S days =
+1 1 0 0 2 4 0
+. . . . . . .
+. . . . . . .
+. . . . . . .
+0 0 0 0 0 2 0 
+
+Since the dataset we have does not include the room rate, we can only implement the Time-based LSTM model.
+
+Hyperparameters:
+Learning Rate: 0.1
+Time Step: 1 (one entry at a time)
+Batch Size: 15
+Epoch : 300
+Dropout 0.6
+S = 7
+(T+1) | Tau = 30
+H = 100
+LSTM (Time) = 86880
+LSTM (Booking) = 353640
+Dense (Time) = 14520
+Dense (Booking) = 44310
+Dense (Output) = 9930
