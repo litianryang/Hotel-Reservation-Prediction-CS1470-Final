@@ -32,7 +32,7 @@ with open('./CSV/H2.csv') as csv_file:
             daysPastInt = int(row['LeadTime'])
             if(daysPastInt < tau):
                 daysPast = datetime.timedelta(daysPastInt)
-               arrivalDate = datetime.date(int(row['ArrivalDateYear']), int(months[row['ArrivalDateMonth']]), int(row['ArrivalDateDayOfMonth']))
+                arrivalDate = datetime.date(int(row['ArrivalDateYear']), int(months[row['ArrivalDateMonth']]), int(row['ArrivalDateDayOfMonth']))
                 bookDate = arrivalDate - daysPast
                 booking_tuples.append((bookDate, daysPastInt)) #might need arrivalDate = bookDate + daysPast
                 
@@ -45,7 +45,7 @@ for key in booking_counted.keys():
                                   0,0,0,0,0,0,0,0,0,0,
                                   0,0,0,0,0,0,0,0,0,0] #tau days of 0s
     booking_by_day[key[0]][key[1]] = booking_counted[key]
-    print(booking_by_day[key[0]key[1]])
+    # print(booking_by_day[key[0]key[1]])
 
 #value looks like it's just its position in the array
 #booking_by_day ={[bookDate, daysPast/LeadTime] : }
@@ -62,6 +62,7 @@ with open('./Output/H2Formatted.csv', mode='w') as output_file:
         #replace with going a day ahead/per booking
         bookingDate = key + oneDay
         for i in range(tau):
+            print(bookingDate.month, 'float attempt: ', bookingDate.month)
             months.append(bookingDate.month)
             dow.append(bookingDate.weekday())
             bookingDate = bookingDate + oneDay

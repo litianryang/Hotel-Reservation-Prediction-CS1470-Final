@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from DataProcessor import get_data;
+from DataProcessor import get_data
 
 class Model(tf.keras.Model):
 	def __init__(self):
@@ -25,8 +25,8 @@ class Model(tf.keras.Model):
 		self.dense_bk = tf.keras.layers.Dense(dense_bk, "relu")
 		self.dense_tm = tf.keras.layers.Dense(dense_tm, "relu") 
 		self.dense_final = tf.keras.layers.Dense(dense_final, "relu")
-
-
+        
+        
 	@tf.function
 	def call(self, month_input, dow_input, hist_input):
 		"""
@@ -58,7 +58,7 @@ class Model(tf.keras.Model):
 		"""
 def main ():
 	#train, test model
-	x1, x2, y = get_data('')
+	x1, x2, y = get_data('H2Formatted.csv', 14)
 
 if __name__ == '__main__':
    main()
