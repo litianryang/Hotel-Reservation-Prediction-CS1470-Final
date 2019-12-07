@@ -18,9 +18,10 @@ months = {
 }
 
 tau = 30
+fileName = 'H2'
 
 booking_tuples = []
-with open('./CSV/H2.csv') as csv_file:
+with open('./CSV/' + fileName + '.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
     first_line = True
     
@@ -37,27 +38,68 @@ with open('./CSV/H2.csv') as csv_file:
                 
 booking_tuples = sorted(booking_tuples)
 booking_counted = Counter(booking_tuples)
-booking_by_day = {}
+booking_by_day_raw = {}
 for key in booking_counted.keys():
-    if key[0] not in booking_by_day:
-        booking_by_day[key[0]] = [0,0,0,0,0,0,0,0,0,0,
+    if key[0] not in booking_by_day_raw:
+        booking_by_day_raw[key[0]] = [0,0,0,0,0,0,0,0,0,0,
                                   0,0,0,0,0,0,0,0,0,0,
                                   0,0,0,0,0,0,0,0,0,0] #tau days of 0s
-    booking_by_day[key[0]][key[1]] = booking_counted[key]
+    booking_by_day_raw[key[0]][key[1]] = booking_counted[key]
 
-with open('./Output/H2Formatted.csv', mode='w') as output_file:
-    fieldnames = ['BookDateYear', 'BookDateMonth', 'BookDateDayOfMonth', 'Bookings', 'Month', 'DOW']
-    writer = csv.DictWriter(output_file, fieldnames=fieldnames)
-    writer.writeheader()
-    
-    oneDay = datetime.timedelta(1)
-    for key in booking_by_day.keys():
+oneDay = datetime.timedelta(1)
+firstDate = True
+currentDate = None
+booking_by_day = {}
+for key in booking_by_day_raw:
+    if firstDate:
+        currentDate = key
         months = []
         dow = []
-        bookingDate = key + oneDay
+        bookingDate = key
         for i in range(tau):
             months.append(bookingDate.month)
             dow.append(bookingDate.weekday())
             bookingDate = bookingDate + oneDay
-        writer.writerow({'BookDateYear': key.year, 'BookDateMonth': key.month, 'BookDateDayOfMonth': key.day, 'Bookings': booking_by_day[key], 'Month': months, 'DOW': dow})
+        booking_by_day[key] = (booking_by_day_raw[key], months, dow)
+        firstDate = False
+    else:
+        while key != currentDate:
+            months = []
+            dow = []
+            bookingDate = currentDate
+            for i in range(tau):
+                months.append(bookingDate.month)
+                dow.append(bookingDate.weekday())
+                bookingDate = bookingDate + oneDay
+            booking_by_day[currentDate] = ([0,0,0,0,0,0,0,0,0,0,
+                                            0,0,0,0,0,0,0,0,0,0,
+                                            0,0,0,0,0,0,0,0,0,0],
+                                            months, dow)
+            currentDate = currentDate + oneDay
+        months = []
+        dow = []
+        bookingDate = key
+        for i in range(tau):
+            months.append(bookingDate.month)
+            dow.append(bookingDate.weekday())
+            bookingDate = bookingDate + oneDay
+        booking_by_day[key] = (booking_by_day_raw[key], months, dow)
+    currentDate = currentDate + oneDay
+    
+with open('./Output/' + fileName + 'Train.csv', mode='w') as train_file:
+    with open('./Output/' + fileName + 'Test.csv', mode='w') as test_file:
+        fieldnames = ['BookDateYear', 'BookDateMonth', 'BookDateDayOfMonth', 'Bookings', 'Month', 'DOW']
+        trainWriter = csv.DictWriter(train_file, fieldnames=fieldnames)
+        trainWriter.writeheader()
+        testWriter = csv.DictWriter(test_file, fieldnames=fieldnames)
+        testWriter.writeheader()
+        
+        entryCount = 0
+        trainCount = int(len(booking_by_day.keys()) * 0.7)
+        for key in booking_by_day.keys():
+            if entryCount < trainCount:
+                trainWriter.writerow({'BookDateYear': key.year, 'BookDateMonth': key.month, 'BookDateDayOfMonth': key.day, 'Bookings': booking_by_day[key][0], 'Month': booking_by_day[key][1], 'DOW': booking_by_day[key][2]})
+            else:
+                testWriter.writerow({'BookDateYear': key.year, 'BookDateMonth': key.month, 'BookDateDayOfMonth': key.day, 'Bookings': booking_by_day[key][0], 'Month': booking_by_day[key][1], 'DOW': booking_by_day[key][2]})
+            entryCount += 1
 print("Done")
