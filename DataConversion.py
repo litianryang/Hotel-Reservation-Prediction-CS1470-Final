@@ -19,6 +19,7 @@ months = {
 
 tau = 30
 
+
 booking_tuples = []
 with open('./CSV/H2.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
@@ -31,11 +32,11 @@ with open('./CSV/H2.csv') as csv_file:
             daysPastInt = int(row['LeadTime'])
             if(daysPastInt < tau):
                 daysPast = datetime.timedelta(daysPastInt)
-                bookingDate = datetime.date(int(row['ArrivalDateYear']), int(months[row['ArrivalDateMonth']]), int(row['ArrivalDateDayOfMonth']))
-                bookDate = bookingDate - daysPast
-                booking_tuples.append((bookDate, daysPastInt))
+               arrivalDate = datetime.date(int(row['ArrivalDateYear']), int(months[row['ArrivalDateMonth']]), int(row['ArrivalDateDayOfMonth']))
+                bookDate = arrivalDate - daysPast
+                booking_tuples.append((bookDate, daysPastInt)) #might need arrivalDate = bookDate + daysPast
                 
-booking_tuples = sorted(booking_tuples)
+booking_tuples = sorted(booking_tuples) 
 booking_counted = Counter(booking_tuples)
 booking_by_day = {}
 for key in booking_counted.keys():
@@ -44,7 +45,10 @@ for key in booking_counted.keys():
                                   0,0,0,0,0,0,0,0,0,0,
                                   0,0,0,0,0,0,0,0,0,0] #tau days of 0s
     booking_by_day[key[0]][key[1]] = booking_counted[key]
+    print(booking_by_day[key[0]key[1]])
 
+#value looks like it's just its position in the array
+#booking_by_day ={[bookDate, daysPast/LeadTime] : }
 with open('./Output/H2Formatted.csv', mode='w') as output_file:
     fieldnames = ['BookDateYear', 'BookDateMonth', 'BookDateDayOfMonth', 'Bookings', 'Month', 'DOW']
     writer = csv.DictWriter(output_file, fieldnames=fieldnames)
@@ -54,6 +58,8 @@ with open('./Output/H2Formatted.csv', mode='w') as output_file:
     for key in booking_by_day.keys():
         months = []
         dow = []
+        #should not be adding a day at this point
+        #replace with going a day ahead/per booking
         bookingDate = key + oneDay
         for i in range(tau):
             months.append(bookingDate.month)
