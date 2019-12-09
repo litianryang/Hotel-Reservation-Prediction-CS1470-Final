@@ -20,7 +20,6 @@ months = {
 tau = 30
 fileName = 'H2'
 
-
 booking_tuples = []
 with open('./CSV/' + fileName + '.csv') as csv_file:
     csv_reader = csv.DictReader(csv_file, delimiter=',')
@@ -33,11 +32,11 @@ with open('./CSV/' + fileName + '.csv') as csv_file:
             daysPastInt = int(row['LeadTime'])
             if(daysPastInt < tau):
                 daysPast = datetime.timedelta(daysPastInt)
-                arrivalDate = datetime.date(int(row['ArrivalDateYear']), int(months[row['ArrivalDateMonth']]), int(row['ArrivalDateDayOfMonth']))
-                bookDate = arrivalDate - daysPast
-                booking_tuples.append((bookDate, daysPastInt)) #might need arrivalDate = bookDate + daysPast
+                bookingDate = datetime.date(int(row['ArrivalDateYear']), int(months[row['ArrivalDateMonth']]), int(row['ArrivalDateDayOfMonth']))
+                bookDate = bookingDate - daysPast
+                booking_tuples.append((bookDate, daysPastInt))
                 
-booking_tuples = sorted(booking_tuples) 
+booking_tuples = sorted(booking_tuples)
 booking_counted = Counter(booking_tuples)
 booking_by_day_raw = {}
 for key in booking_counted.keys():
@@ -81,7 +80,6 @@ for key in booking_by_day_raw:
         dow = []
         bookingDate = key
         for i in range(tau):
-            print(bookingDate.month, 'float attempt: ', bookingDate.month)
             months.append(bookingDate.month)
             dow.append(bookingDate.weekday())
             bookingDate = bookingDate + oneDay

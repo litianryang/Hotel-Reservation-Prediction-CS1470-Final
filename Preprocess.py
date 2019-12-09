@@ -24,37 +24,69 @@ def read_data_file(file_name):
                 data[bookDate] = (bookings, months, DOWs)
             line_count += 1
     print(f'Processed {line_count} lines.')
-    
-    dailyData = {}
+    return data
+
+def get_data_dict(data):
+    dataDict = {}
     date_count = 0
     pastBookings = np.zeros((30,7))
     for item in data.items():
         if date_count > 6:
-            bookDate = item[0]
             futureDates = np.concatenate((item[1][1], item[1][2]), axis=1)
-            dailyData[item[0]] = (futureDates, pastBookings)
+            dataDict[item[0]] = (item[1][0], futureDates, pastBookings)
         pastBookings = np.concatenate((item[1][0], pastBookings), axis=1)
         pastBookings = np.delete(pastBookings, 7, axis=1)
         date_count += 1
-    return dailyData
+    return dataDict
+    
+def get_data_array(data):
+    todayBookings = []
+    futureDates = []
+    pastBookings = []
+    date_count = 0
+    pastWeekBookings = np.zeros((30,7))
+    for item in data.items():
+        if date_count == 7:
+            todayBookings = np.reshape(item[1][0], (1, 30))
+            futureDates = np.reshape(np.concatenate((item[1][1], item[1][2]), axis=1), (1, 30, 2))
+            pastBookings = np.reshape(pastWeekBookings, (1, 30, 7))
+        elif date_count > 7:
+            todayBookings = np.concatenate([todayBookings, np.reshape(item[1][0], (1, 30))], axis=0)
+            futureDates = np.concatenate([futureDates, np.reshape(np.concatenate((item[1][1], item[1][2]), axis=1), (1, 30, 2))], axis=0)
+            pastBookings = np.concatenate([pastBookings, np.reshape(pastWeekBookings, (1, 30, 7))], axis=0)
+        pastWeekBookings = np.concatenate((item[1][0], pastWeekBookings), axis=1)
+        pastWeekBookings = np.delete(pastWeekBookings, 7, axis=1)
+        date_count += 1
+    return todayBookings, futureDates, pastBookings
 
-def get_data(h1_training_file, h1_test_file, h2_training_file, h2_test_file):
+def get_data(training_file, test_file, isArray=True):
     """
-    :param h1_training_file: Path to the h1 training file.
-    :param h1_test_file: Path to the h1 test file.
-    :param h2_training_file: Path to the h2 training file.
-    :param h2_test_file: Path to the h2 test file.
+    :param training_file: Path to the hotel training file.
+    :param test_file: Path to the hotel test file.
+    :param array: Are we returning the data in an array format (True) or in a dictionary format (False)
     
-    :return: A tuple containing four dicts containing the booking data in the same order as inputs.
+    :return: If Array (True): A tuple containing three arrays containing today's bookings for the next 30 days, the next 30 days date info, and the past week's worth of bookings for the next 30 days respectively for every day. [individual dates, 30 days, varies depending on array]
+    
+    If Dictionary (False): A dictionary containing key values pairs where the key is the current date and the value is a tuple containing the same three arrays as Array returns minus the date axis. [30 days, varies depending on array].
     """
     
-    train_h1 = read_data_file(h1_training_file)    
-    test_h1 = read_data_file(h1_test_file)
-    train_h2 = read_data_file(h2_training_file)
-    test_h2 = read_data_file(h2_test_file)
+    if isArray:
+        today, future, past = get_data_array(read_data_file(training_file))
+        train = (today, future, past)
+        today, future, past = get_data_array(read_data_file(test_file))
+        test = (today, future, past)
+    else:
+        train = get_data_dict(read_data_file(training_file))
+        test = get_data_dict(read_data_file(test_file))
 
-    return train_h1, test_h1, train_h2, test_h2
-    
-tr1, ts1, tr2, ts2 = get_data("./Output/H1Train.csv", "./Output/H1Test.csv", "./Output/H2Train.csv", "./Output/H2Test.csv")
+    return train, test
 
-print(tr1[datetime.date(2015,6,15)])
+# isArray = True
+# train, test = get_data("./Output/H1Train.csv", "./Output/H1Test.csv", isArray)
+
+# if isArray:
+    # print(train[0][2])
+    # print(train[1][2])
+    # print(train[2][2])
+# else:
+    # print(train[datetime.date(2015,6,15)])
